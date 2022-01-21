@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { paginate } from "../utils/paginate";
-import Pagination from "./pagination";
-import api from "../api";
-import GroupList from "./groupList";
-import SearchStatus from "./searchStatus";
-import UserTable from "./usersTable";
+import { paginate } from "../../../utils/paginate";
+import Pagination from "../../common/pagination";
+import api from "../../../api";
+import GroupList from "../../common/groupList";
+import SearchStatus from "../../ui/searchStatus";
+import UserTable from "../../ui/usersTable";
 import _ from "lodash";
-import SearchUsers from "./searchUsers";
-import { search } from "../utils/search";
-const UsersList = () => {
+import { search } from "../../../utils/search";
+const UsersListPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [professions, setProfession] = useState();
     const [selectedProf, setSelectedProf] = useState();
     const [sortBy, setSortBy] = useState({ path: "name", order: "asc" });
-    const [findedUsers, setFindedUsers] = useState()
+    const [findedUsers, setFindedUsers] = useState();
     const pageSize = 8;
     const [users, setUsers] = useState();
     useEffect(() => {
@@ -42,7 +41,7 @@ const UsersList = () => {
     }, [selectedProf]);
 
     const handleProfessionSelect = (item) => {
-        setFindedUsers(undefined)
+        setFindedUsers(undefined);
         setSelectedProf(item);
     };
 
@@ -53,21 +52,20 @@ const UsersList = () => {
         setSortBy(item);
     };
     const handleUserSearch = ({ target }) => {
-        setSelectedProf()
+        setSelectedProf();
         return setFindedUsers(() => ({
-             [target.name]: target.value
+            [target.name]: target.value
         }));
-    }
-   
+    };
     if (users) {
+        const searchUsersCount = findedUsers ? search(users, findedUsers.search) : users;
         const filteredUsers = selectedProf
             ? users.filter(
-                  (user) =>
-                      JSON.stringify(user.profession) ===
-                      JSON.stringify(selectedProf)
-              )
+                (user) =>
+                    JSON.stringify(user.profession) ===
+                    JSON.stringify(selectedProf)
+            )
             : users;
-
         const count = filteredUsers.length;
         const sortedUsers = _.orderBy(
             filteredUsers,
@@ -78,7 +76,6 @@ const UsersList = () => {
         const clearFilter = () => {
             setSelectedProf();
         };
-        const searchUsersCount = findedUsers ? search(usersCrop, findedUsers.search) : undefined;
         return (
             <div className="d-flex">
                 {professions && (
@@ -98,8 +95,19 @@ const UsersList = () => {
                     </div>
                 )}
                 <div className="d-flex flex-column">
-                    <SearchStatus length={findedUsers === undefined ? count : searchUsersCount.length} />
-                    <SearchUsers onChange={handleUserSearch} />
+                    <SearchStatus
+                        length={findedUsers === undefined
+                            ? count
+                            : searchUsersCount.length} />
+                    <input
+                        type="search"
+                        name="search"
+                        id="form1"
+                        className="form-control"
+                        placeholder="Search..."
+                        ariaLabel="Search"
+                        onChange={handleUserSearch}
+                    />
                     {count > 0 && (
                         <UserTable
                             users={findedUsers === undefined ? usersCrop : searchUsersCount}
@@ -123,8 +131,8 @@ const UsersList = () => {
     }
     return "loading...";
 };
-UsersList.propTypes = {
+UsersListPage.propTypes = {
     users: PropTypes.array
 };
 
-export default UsersList;
+export default UsersListPage;
